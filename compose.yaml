@@ -1,0 +1,6 @@
+services:
+  mongo:
+    image: docker.io/library/mongo:8
+    container_name: formative-mongo
+    ports:
+      - "27017:27017"
