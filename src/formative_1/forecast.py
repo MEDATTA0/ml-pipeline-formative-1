@@ -59,7 +59,11 @@ def fetch_latest_date(api_url: str, ticker: str, source: str) -> date:
         if record["ticker"] == ticker:
             return date.fromisoformat(record["date"])
 
-    raise ValueError(f"The API returned no {source} records for {ticker!r}.")
+    available = ", ".join(sorted(record["ticker"] for record in payload[source]))
+    raise ValueError(
+        f"The API returned no {source} records for {ticker!r}. "
+        f"Available tickers: {available}."
+    )
 
 
 def fetch_history(
