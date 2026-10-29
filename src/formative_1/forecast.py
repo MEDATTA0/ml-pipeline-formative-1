@@ -17,7 +17,7 @@ import polars as pl
 import torch
 
 from formative_1 import stock_data as sd
-from formative_1.lstm_model import TwoHeadLSTM, predict
+from formative_1.lstm_model import DEVICE, TwoHeadLSTM, predict
 
 DEFAULT_API_URL = "http://127.0.0.1:8000"
 DEFAULT_MODEL_FILE = "models/lstm_two_head.pt"
@@ -121,13 +121,15 @@ def load_model(model_file: Path) -> tuple[dict[str, Any], list[TwoHeadLSTM]]:
             "`git lfs pull` to download the model."
         )
 
-    checkpoint = torch.load(model_file, weights_only=False)
+    checkpoint = torch.load(model_file, map_location=DEVICE, weights_only=False)
     config = checkpoint["config"]
     members = []
 
     for state in checkpoint["states"]:
         member = TwoHeadLSTM(config["n_features"], hidden=config["hidden"])
         member.load_state_dict(state)
+        # predict() sends the inputs to DEVICE, so the weights must be there too.
+        member.to(DEVICE)
         members.append(member)
 
     return checkpoint, members
