@@ -21,7 +21,8 @@ VOLUME_DAYS = 60  # rolling window for a ticker's usual volume
 VOLUME_MIN_DAYS = 30  # days of volume history needed before `vol_dev` exists
 SPLIT_RATIO = 5  # a one-day price drop beyond this factor is a stock split
 
-DATA_PATH = Path(__file__).parent / "World-Stock-Prices-Dataset.csv"
+# The CSV lives at the repository root, where load_to_db.py also reads it.
+DATA_PATH = Path(__file__).resolve().parents[2] / "World-Stock-Prices-Dataset.csv"
 
 
 def read_raw(path: Path = DATA_PATH) -> pl.DataFrame:
