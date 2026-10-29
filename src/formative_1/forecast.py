@@ -178,6 +178,14 @@ def run(
     }
 
 
+def positive_int(value: str) -> int:
+    """argparse type for a whole number above zero."""
+    number = int(value)
+    if number <= 0:
+        raise argparse.ArgumentTypeError(f"must be above zero, got {number}")
+    return number
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Forecast the next-session close from API records.",
@@ -204,7 +212,7 @@ def main() -> None:
 
     parser.add_argument(
         "--lookback-days",
-        type=int,
+        type=positive_int,
         default=DEFAULT_LOOKBACK_DAYS,
         help="Calendar days of history to fetch before the latest record.",
     )
