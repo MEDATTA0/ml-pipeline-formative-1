@@ -119,6 +119,15 @@ def find_ticker(db_con: sqlite3.Connection, ticker: str) -> sqlite3.Row:
     return row
 
 
+def normalize_ticker(ticker: str) -> str:
+    return ticker.strip().upper()
+
+
+def ticker_details(info: sqlite3.Row) -> dict[str, str]:
+    """The company fields MongoDB stores on every document (it is denormalised)."""
+    return {key: info[key] for key in ("company", "country", "industry")}
+
+
 def stock_not_found(ticker: str, day: date) -> HTTPException:
     return HTTPException(404, f"No stock row for {ticker} on {day.isoformat()}")
 
@@ -132,7 +141,7 @@ mongo_unavailable = HTTPException(503, "MongoDB write failed; nothing was change
 def create_stock(
     stock: Stock, db_con: SqliteClient, collection: MongoCollection
 ) -> Stock:
-    ticker, day = stock.ticker.strip().upper(), stock.date.isoformat()
+    ticker, day = normalize_ticker(stock.ticker), stock.date.isoformat()
     info = find_ticker(db_con, ticker)
 
     in_sqlite = db_con.execute(
@@ -153,14 +162,7 @@ def create_stock(
                 (info["id"], day, *values.values()),
             )
             collection.insert_one(
-                {
-                    "ticker": ticker,
-                    "company": info["company"],
-                    "country": info["country"],
-                    "industry": info["industry"],
-                    "date": day,
-                    **values,
-                }
+                {"ticker": ticker, **ticker_details(info), "date": day, **values}
             )
     except sqlite3.IntegrityError:
         raise HTTPException(409, f"{ticker} already has a row for {day}")
@@ -177,7 +179,7 @@ def replace_stock(
     db_con: SqliteClient,
     collection: MongoCollection,
 ) -> Stock:
-    ticker, iso = ticker.strip().upper(), day.isoformat()
+    ticker, iso = normalize_ticker(ticker), day.isoformat()
     info = find_ticker(db_con, ticker)
     fields = values.model_dump()
 
@@ -195,14 +197,7 @@ def replace_stock(
             # upsert repairs a document that is missing from MongoDB
             collection.update_one(
                 {"ticker": ticker, "date": iso},
-                {
-                    "$set": fields,
-                    "$setOnInsert": {
-                        "company": info["company"],
-                        "country": info["country"],
-                        "industry": info["industry"],
-                    },
-                },
+                {"$set": fields, "$setOnInsert": ticker_details(info)},
                 upsert=True,
             )
     except PyMongoError:
@@ -214,7 +209,7 @@ def replace_stock(
 def delete_stock(
     ticker: str, day: date, db_con: SqliteClient, collection: MongoCollection
 ) -> Response:
-    ticker, iso = ticker.strip().upper(), day.isoformat()
+    ticker, iso = normalize_ticker(ticker), day.isoformat()
     info = find_ticker(db_con, ticker)
 
     try:

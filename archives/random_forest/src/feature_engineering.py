@@ -12,12 +12,14 @@ FEATURE_COLUMNS = [
 TARGET_COLUMN = "Target_Close"
 
 
-def make_features(df: pl.DataFrame) -> pl.DataFrame:
+def make_features(df: pl.DataFrame, require_target: bool = True) -> pl.DataFrame:
     """Create features from information available at session t.
 
     The target and target date are shifted one row forward, so t+1 means the
     next available trading observation, not the next calendar date.
     Rolling means include the current close, which is known at prediction time.
+    With require_target=False the final session is kept (its target is null) so
+    it can be used for inference.
     """
     required = {"Date", "Open", "High", "Low", "Close", "Volume"}
     missing = sorted(required.difference(df.columns))
@@ -48,4 +50,6 @@ def make_features(df: pl.DataFrame) -> pl.DataFrame:
 
     return featured.select(
         "Date", "Target_Date", *FEATURE_COLUMNS, TARGET_COLUMN
-    ).drop_nulls(subset=[*FEATURE_COLUMNS, TARGET_COLUMN])
+    ).drop_nulls(
+        subset=[*FEATURE_COLUMNS, *([TARGET_COLUMN] if require_target else [])]
+    )

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Ibrahim Maâzou Djahadi", email = "ibrahimdjahadi46@gmail.com" }
+    { name = "Ibrahim Maâzou Djahadi", email = "ibrahimdjahadi46@gmail.com" },
 ]
 requires-python = ">=3.14"
 dependencies = [
@@ -20,6 +20,7 @@ dependencies = [
     "seaborn>=0.13.2",
     "torch>=2.15.0",
     "scikit-learn>=1.9.1",
+    "httpx>=0.28.1",
 ]
 
 [project.scripts]
@@ -30,6 +31,4 @@ requires = ["uv_build>=0.12.24,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "jupyter>=1.1.1",
-]
+dev = ["jupyter>=1.1.1"]
