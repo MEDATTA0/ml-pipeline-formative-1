@@ -1,0 +1,46 @@
+{
+  "ticker": "AAPL",
+  "forecast_horizon": "next available trading observation",
+  "feature_columns": [
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume",
+    "Dividends",
+    "Stock Splits",
+    "Daily_Return",
+    "Close_Lag_1",
+    "Close_Lag_2",
+    "Close_Lag_5",
+    "Close_Lag_10",
+    "MA_7",
+    "MA_30"
+  ],
+  "price_model": {
+    "filename": "aapl_close_model.joblib",
+    "target": "Target_Close",
+    "best_params": {
+      "max_depth": null,
+      "min_samples_leaf": 2,
+      "min_samples_split": 2,
+      "n_estimators": 400
+    }
+  },
+  "return_model": {
+    "filename": "aapl_return_model.joblib",
+    "target": "next_session_percentage_return",
+    "formula": "(next_close - current_close) / current_close",
+    "reconstruction": "current_close * (1 + predicted_return)",
+    "best_params": {
+      "max_depth": 10,
+      "min_samples_leaf": 2,
+      "min_samples_split": 2,
+      "n_estimators": 400
+    }
+  },
+  "train_rows": 5102,
+  "test_rows": 1276,
+  "test_start_target_date": "2020-05-28",
+  "test_end_target_date": "2025-07-03"
+}
