@@ -41,4 +41,4 @@ CREATE TABLE "stocks" (
     FOREIGN KEY ("ticker_id") REFERENCES "tickers"("id")
 );
 
-CREATE INDEX "stocks_ticker_date" ON "stocks" ("ticker_id", "date");
+CREATE UNIQUE INDEX "stocks_ticker_date" ON "stocks" ("ticker_id", "date");
