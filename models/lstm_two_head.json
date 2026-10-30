@@ -1,0 +1,34 @@
+{
+  "model": "LSTM ensemble (3 seeds: 42, 43, 44), 64 hidden units, 2 layers, two heads",
+  "targets": {
+    "return": "next-day log return; price = Close * exp(return)",
+    "volatility": "next-day log(High/Low)"
+  },
+  "window": 30,
+  "features": [
+    "log_ret",
+    "vol_dev",
+    "hl_range",
+    "mkt_ret"
+  ],
+  "train_tickers": 53,
+  "split": {
+    "val_start": "2019-01-01",
+    "test_start": "2022-01-01"
+  },
+  "test_metrics": {
+    "val_loss": 0.8677950501441956,
+    "ret_mse": 0.0007727214833721519,
+    "ret_r2_vs_zero": 0.0018809391177067036,
+    "ret_direction": 0.5088998457994631,
+    "ret_gain": 1.4439564210988465e-06,
+    "ret_ci95": 4.419655398425294e-06,
+    "vol_mse": 0.00018719359958166047,
+    "vol_r2": 0.5815690215874942,
+    "vol_r2_vs_ref": 0.152829440676721,
+    "vol_gain_vs_ref": 3.3785461561960076e-05,
+    "vol_ci_ref": 1.0087564286401172e-05,
+    "vol_gain_vs_gb": 3.5406517891625e-06,
+    "vol_ci_gb": 3.0060676370247356e-06
+  }
+}
