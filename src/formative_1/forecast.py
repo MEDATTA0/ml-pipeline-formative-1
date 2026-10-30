@@ -17,7 +17,7 @@ import polars as pl
 import torch
 
 from formative_1 import stock_data as sd
-from formative_1.lstm_model import TwoHeadLSTM, predict
+from formative_1.lstm_model import DEVICE, TwoHeadLSTM, predict
 
 DEFAULT_API_URL = "http://127.0.0.1:8000"
 DEFAULT_MODEL_FILE = "models/lstm_two_head.pt"
@@ -59,7 +59,11 @@ def fetch_latest_date(api_url: str, ticker: str, source: str) -> date:
         if record["ticker"] == ticker:
             return date.fromisoformat(record["date"])
 
-    raise ValueError(f"The API returned no {source} records for {ticker!r}.")
+    available = ", ".join(sorted(record["ticker"] for record in payload[source]))
+    raise ValueError(
+        f"The API returned no {source} records for {ticker!r}. "
+        f"Available tickers: {available}."
+    )
 
 
 def fetch_history(
@@ -121,13 +125,15 @@ def load_model(model_file: Path) -> tuple[dict[str, Any], list[TwoHeadLSTM]]:
             "`git lfs pull` to download the model."
         )
 
-    checkpoint = torch.load(model_file, weights_only=False)
+    checkpoint = torch.load(model_file, map_location=DEVICE, weights_only=False)
     config = checkpoint["config"]
     members = []
 
     for state in checkpoint["states"]:
         member = TwoHeadLSTM(config["n_features"], hidden=config["hidden"])
         member.load_state_dict(state)
+        # predict() sends the inputs to DEVICE, so the weights must be there too.
+        member.to(DEVICE)
         members.append(member)
 
     return checkpoint, members
@@ -176,6 +182,14 @@ def run(
     }
 
 
+def positive_int(value: str) -> int:
+    """argparse type for a whole number above zero."""
+    number = int(value)
+    if number <= 0:
+        raise argparse.ArgumentTypeError(f"must be above zero, got {number}")
+    return number
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Forecast the next-session close from API records.",
@@ -202,7 +216,7 @@ def main() -> None:
 
     parser.add_argument(
         "--lookback-days",
-        type=int,
+        type=positive_int,
         default=DEFAULT_LOOKBACK_DAYS,
         help="Calendar days of history to fetch before the latest record.",
     )

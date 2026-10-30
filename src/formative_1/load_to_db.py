@@ -29,7 +29,7 @@ def read_dataset() -> pl.DataFrame:
     return df.with_columns(
         pl.col("Date").str.slice(0, 10),
         # Replace null with 0.0. In our case, emptyness means 0.0
-        pl.col("Capital Gains").fill_null(0.0),
+        pl.col("Capital Gains").cast(pl.Float64).fill_null(0.0),
     ).unique(subset=["Date", "Ticker"], keep="last", maintain_order=True)
 
 
